@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Workspace · Inkloom AI{% endblock %}
+{% block content %}
+<section class="desk">
+  <div class="desk-copy">
+    <h1>Catch off-brand wording before it goes live.</h1>
+    <p class="lead">Paste a draft. Inkloom marks phrases that break your brand rules and says why. You make the final call.</p>
+    <dl class="stats">
+      <div><dt>Reviews run</dt><dd>{{ total }}</dd></div>
+      <div><dt>Need review</dt><dd class="warn">{{ flagged }}</dd></div>
+      <div><dt>Brand rules</dt><dd>5</dd></div>
+    </dl>
+  </div>
+  <div class="workspace" id="review">
+    <div class="workspace-heading"><h2>Check a draft</h2><span class="demo-pill"><span></span> Demo mode</span></div>
+    <div class="sample-row"><span class="sample-label">Try a sample</span>
+      <button type="button" class="sample-button" data-sample="Hey guys!! This is the best ever product — 100% guaranteed to work.">Potential issues</button>
+      <button type="button" class="sample-button" data-sample="Our team helps customers organize their weekly tasks with a simple, clear workspace.">Cleaner draft</button>
+      <button type="button" class="sample-button" data-sample="Our app is 2x faster and always gives perfect results.">Needs evidence</button>
+    </div>
+    <form action="{{ url_for('review') }}" method="post" class="review-form">
+      <div class="label-row"><label for="draft">Draft content</label><span id="char-count">0 characters</span></div>
+      <textarea id="draft" name="draft" required minlength="3" maxlength="12000" placeholder="Paste the content you want to review...">Hey guys!! This is the best ever product — 100% guaranteed to work.</textarea>
+      <div class="form-bottom"><p>Checked locally against sample rules.</p><button class="button" type="submit">Run brand check</button></div>
+    </form>
+  </div>
+</section>
+
+<section class="recent-section">
+  <div class="section-heading"><div><h2>Recent reviews</h2><p class="muted">Pick up where you left off.</p></div><a class="text-link" href="{{ url_for('history') }}">All reviews</a></div>
+  <div class="review-list">
+  {% for r in reviews %}
+    <a class="review-row" href="{{ url_for('result', review_id=r['id']) }}"><span class="review-copy"><b>{{ r['draft'][:90] }}{% if r['draft']|length > 90 %}…{% endif %}</b><small>#{{ r['id'] }} &nbsp;{{ r['created_at'] }}</small></span><span class="status status-{{ r['status']|lower|replace(' ', '-') }}">{{ r['status'] }}</span></a>
+  {% else %}<div class="empty-state"><b>No reviews yet</b><p>Run a brand check above and it will show up here.</p></div>{% endfor %}
+  </div>
+</section>
+<div class="disclaimer"><p><b>Prototype limitation.</b> This is a rule-based demo, not an AI model or fact-checker. A flagged claim needs human verification; it is not automatically false.</p></div>
+<script>
+const draft=document.getElementById('draft'),count=document.getElementById('char-count');
+function updateCount(){count.textContent=draft.value.length.toLocaleString()+' characters';}
+draft.addEventListener('input',updateCount);updateCount();
+document.querySelectorAll('[data-sample]').forEach(b=>b.addEventListener('click',()=>{draft.value=b.dataset.sample;updateCount();draft.focus();}));
+</script>
+{% endblock %}
